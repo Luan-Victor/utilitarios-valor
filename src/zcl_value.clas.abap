@@ -26,7 +26,7 @@ ENDCLASS.
 CLASS ZCL_VALUE IMPLEMENTATION.
 
 
-  METHOD REDUCE_DECIMALS_NO_ROUND.
+  METHOD reduce_decimals_no_round.
 
     DATA: lv_value_string TYPE string.
 
@@ -40,7 +40,15 @@ CLASS ZCL_VALUE IMPLEMENTATION.
     CHECK sy-subrc = 0.
 
     DATA(lv_lenght) = strlen( lv_value_string ).
-    DATA(lv_current_decimal) = lv_lenght - lv_position - 1.
+
+* Verifica se é um número negativo
+    FIND '-' IN lv_value_string.
+    IF sy-subrc = 0.
+      DATA(lv_current_decimal) = lv_lenght - lv_position - 2.
+    ELSE.
+      lv_current_decimal = lv_lenght - lv_position - 1.
+    ENDIF.
+
     CHECK lv_current_decimal >= i_decimal.
 
 * Reduz para a casa decimal desejada
@@ -59,16 +67,25 @@ CLASS ZCL_VALUE IMPLEMENTATION.
     DATA: lv_p_2     TYPE p DECIMALS 2,
           lv_value_c TYPE c LENGTH 30.
 
+    e_output = i_input.
+    FIND '.' IN e_output MATCH OFFSET DATA(lv_position).
+    CHECK sy-subrc = 0.
+
 * Converte para duas casas decimais senão o write não funciona
     DATA(lv_value) = zcl_value=>reduce_decimals_no_round( EXPORTING i_input   = i_input
                                                                     i_decimal = 2 ).
-
 * Joga para um campo do tipo p
     lv_p_2 = lv_value.
 
 * Converte para notação de moeda
     WRITE lv_p_2 TO lv_value_c CURRENCY i_currency.
     CONDENSE lv_value_c.
+
+* Verifica se é um numero negativo
+    lv_position = strlen( lv_value_c ) - 1.
+    IF lv_value_c+lv_position(1) = '-'.
+      lv_value_c = '-' && lv_value_c(lv_position).
+    ENDIF.
 
 * Retorna valor
     e_output = lv_value_c.
