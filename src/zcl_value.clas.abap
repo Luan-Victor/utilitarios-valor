@@ -68,6 +68,9 @@ CLASS ZCL_VALUE IMPLEMENTATION.
           lv_value_c TYPE c LENGTH 30.
 
     e_output = i_input.
+
+* Check if it's number
+    CHECK e_output CO '0123456789.- '.
     FIND '.' IN e_output MATCH OFFSET DATA(lv_position).
     CHECK sy-subrc = 0.
 
